@@ -1,79 +1,68 @@
-const fs = require("file-system");
-const express = require("express");
-
-const path = require("path");
+const express = require("express")
+const path = require("path")
+const fs = require("fs")
 
 let app = express();
-
-//set port
-let PORT = process.env.PORT || 8080;
+let PORT = process.env.PORT ||3000;
 
 fs.writeFile(path.join(__dirname, "db/db.json"), "[]", function (err) {
     if (err) {
         return console.log(err);
     }
-    //console.log(complete);
-});
+    console.log("success cleared storage")
 
+})
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-
 app.use(express.static("public"));
 
-app.get("/"), function (req, res) {
-    res.sendFile(path.join(__dirname, "public/index"));
-}
-
 app.get("/notes", function (req, res) {
-    res.sendFile(path.join(__dirname, "public/notes"));
+    res.sendfile(path.join(__dirname, "public/notes.html"))
 });
-// writes to the db
-app.get("api/notes", function (req, res) {
-    fs.readFile(path.join(__dirname, "db/db.json"), "utf8", function (err, data) {
-        if (err) {
-            console.log(err)
+app.get("/api/notes", function (req, res) {
+    fs.readFile(path.join(__dirname, "db/db.json"), "utf8", function (error, data) {
+        if (error) {
+            return console.log(error);
         }
         data = JSON.parse(data)
-        res.send(data)
+        res.send(data);
+
     })
 });
-
-app.post("api/notes", function (req, res) {
-    fs.readFile(path.join(__dirname, "db/db.json"), "utf8", function (err, data) {
-        if (err) {
-            return console.error;
+app.post("/api/notes", function (req, res) {
+    fs.readFile(path.join(__dirname, "db/db.json"), "utf8", function (error, data) {
+        if (error) {
+            return console.log(error);
         };
         data = JSON.parse(data)
         data.push(req.body)
-        fs.writeFile(path.join(__dirname, "db/db/json"), JSON.stringify(data), function (err) {
+        fs.writeFile(path.join(__dirname, "db/db.json"), JSON.stringify(data), function (err) {
             if (err) {
-                return console.error;
-            } res.send(data);
+                return console.log(err);
+            }
+            res.send(data);
         })
+
     })
 });
-
-
-//deletes from database 
 app.delete("/api/notes/:note", function (req, res) {
-    fs.readFile(path.join(__dirname, "db/db.json"), "utf8", function (err, data) {
-        if (err) {
-            return console.error
-        } let remove = req.params.note;
+    fs.readFile(path.join(__dirname, "db/db.json"), "utf8", function (error, data) {
+        if (error) {
+            return console.log(error);
+        }
+        let remove = req.params.note;
         data = JSON.parse(data)
         let result = data.filter(data => data.title !== remove);
         fs.writeFile(path.join(__dirname, "db/db.json"), JSON.stringify(result), function (err) {
             if (err) {
-                return console.error;
+                return console.log(err);
             }
         })
         res.send(data);
     });
 })
 
-
 app.listen(PORT, function () {
-    console.log("application listening on " + PORT)
+    console.log("App listening on port" + PORT)
 })
